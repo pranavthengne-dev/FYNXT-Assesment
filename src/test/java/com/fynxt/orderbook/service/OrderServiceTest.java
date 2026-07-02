@@ -14,6 +14,7 @@ import com.fynxt.orderbook.exception.PendingOrderLimitExceededException;
 import com.fynxt.orderbook.repository.HoldingRepository;
 import com.fynxt.orderbook.repository.OrderRepository;
 import com.fynxt.orderbook.repository.TraderRepository;
+import com.fynxt.orderbook.service.impl.OrderServiceImpl;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,7 +35,7 @@ class OrderServiceTest {
     private TraderRepository traderRepository;
 
     @InjectMocks
-    private OrderService orderService;
+    private OrderServiceImpl orderService;
 
     @Test
     void rejectsFourthPendingOrderForTrader() {
