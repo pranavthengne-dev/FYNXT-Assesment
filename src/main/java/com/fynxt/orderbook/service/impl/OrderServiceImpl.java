@@ -1,5 +1,6 @@
 package com.fynxt.orderbook.service.impl;
 
+import com.fynxt.orderbook.config.OrderBookProperties;
 import com.fynxt.orderbook.domain.model.Holding;
 import com.fynxt.orderbook.domain.model.Order;
 import com.fynxt.orderbook.domain.model.Trader;
@@ -16,22 +17,26 @@ import com.fynxt.orderbook.repository.OrderRepository;
 import com.fynxt.orderbook.repository.TraderRepository;
 import com.fynxt.orderbook.service.OrderService;
 import jakarta.persistence.EntityNotFoundException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Slf4j
 public class OrderServiceImpl implements OrderService {
 
-    private static final Logger log = LoggerFactory.getLogger(OrderServiceImpl.class);
-    private static final int MAX_PENDING_ORDERS = 3;
-
+    private final OrderBookProperties properties;
     private final OrderRepository orderRepository;
     private final HoldingRepository holdingRepository;
     private final TraderRepository traderRepository;
 
-    public OrderServiceImpl(OrderRepository orderRepository, HoldingRepository holdingRepository, TraderRepository traderRepository) {
+    public OrderServiceImpl(
+            OrderBookProperties properties,
+            OrderRepository orderRepository,
+            HoldingRepository holdingRepository,
+            TraderRepository traderRepository
+    ) {
+        this.properties = properties;
         this.orderRepository = orderRepository;
         this.holdingRepository = holdingRepository;
         this.traderRepository = traderRepository;
@@ -97,8 +102,10 @@ public class OrderServiceImpl implements OrderService {
         traderRepository.findLockedById(traderId)
                 .orElseThrow(() -> new EntityNotFoundException("Trader " + traderId + " not found"));
         long pendingCount = orderRepository.countByTraderIdAndStatus(traderId, OrderStatus.PENDING);
-        if (pendingCount >= MAX_PENDING_ORDERS) {
-            throw new PendingOrderLimitExceededException("Trader " + traderId + " already has 3 pending orders");
+        if (pendingCount >= properties.getMaxPendingOrders()) {
+            throw new PendingOrderLimitExceededException(
+                    "Trader " + traderId + " already has " + properties.getMaxPendingOrders() + " pending orders"
+            );
         }
         if (side == OrderSide.SELL) {
             log.debug("Using class=OrderServiceImpl method=createPendingOrder internalMethod=ensureSharesAvailable");

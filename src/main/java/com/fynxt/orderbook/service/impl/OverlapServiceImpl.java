@@ -1,5 +1,6 @@
 package com.fynxt.orderbook.service.impl;
 
+import com.fynxt.orderbook.config.OrderBookProperties;
 import com.fynxt.orderbook.domain.logic.Basket;
 import com.fynxt.orderbook.domain.logic.OverlapCalculator;
 import com.fynxt.orderbook.domain.logic.RiskClassifier;
@@ -14,21 +15,26 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 @Service
+@Slf4j
 public class OverlapServiceImpl implements OverlapService {
 
-    private static final Logger log = LoggerFactory.getLogger(OverlapServiceImpl.class);
-
+    private final OrderBookProperties properties;
     private final PortfolioService portfolioService;
     private final OverlapCalculator overlapCalculator = new OverlapCalculator();
-    private final RiskClassifier riskClassifier = new RiskClassifier();
+    private final RiskClassifier riskClassifier;
 
-    public OverlapServiceImpl(PortfolioService portfolioService) {
+    public OverlapServiceImpl(
+            OrderBookProperties properties,
+            PortfolioService portfolioService,
+            RiskClassifier riskClassifier
+    ) {
+        this.properties = properties;
         this.portfolioService = portfolioService;
+        this.riskClassifier = riskClassifier;
     }
 
     @Override
@@ -42,7 +48,7 @@ public class OverlapServiceImpl implements OverlapService {
         Map<Basket, Double> overlaps = new EnumMap<>(Basket.class);
         log.debug("Using class=OverlapServiceImpl method=calculateOverlap dependency=OverlapCalculator.calculate");
         Arrays.stream(Basket.values())
-                .forEach(basket -> overlaps.put(basket, overlapCalculator.calculate(portfolioStocks, basket.stocks())));
+                .forEach(basket -> overlaps.put(basket, overlapCalculator.calculate(portfolioStocks, properties.stocksFor(basket))));
 
         Basket dominantBasket = overlaps.entrySet().stream()
                 .max(Comparator.comparingDouble(Map.Entry::getValue))

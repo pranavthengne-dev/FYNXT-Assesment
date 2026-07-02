@@ -3,6 +3,7 @@ package com.fynxt.orderbook.service;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
+import com.fynxt.orderbook.config.OrderBookProperties;
 import com.fynxt.orderbook.domain.model.Holding;
 import com.fynxt.orderbook.domain.model.Trader;
 import com.fynxt.orderbook.domain.model.enums.OrderSide;
@@ -34,11 +35,15 @@ class OrderServiceTest {
     @Mock
     private TraderRepository traderRepository;
 
+    @Mock
+    private OrderBookProperties properties;
+
     @InjectMocks
     private OrderServiceImpl orderService;
 
     @Test
     void rejectsFourthPendingOrderForTrader() {
+        when(properties.getMaxPendingOrders()).thenReturn(3);
         when(traderRepository.findLockedById("T001")).thenReturn(Optional.of(new Trader("T001", "Test Trader")));
         when(orderRepository.countByTraderIdAndStatus("T001", OrderStatus.PENDING)).thenReturn(3L);
 
@@ -50,6 +55,7 @@ class OrderServiceTest {
 
     @Test
     void rejectsSellOrderWhenSharesAreInsufficient() {
+        when(properties.getMaxPendingOrders()).thenReturn(3);
         when(traderRepository.findLockedById("T001")).thenReturn(Optional.of(new Trader("T001", "Test Trader")));
         when(orderRepository.countByTraderIdAndStatus("T001", OrderStatus.PENDING)).thenReturn(0L);
         when(holdingRepository.findByTraderIdAndStock("T001", "AAPL"))

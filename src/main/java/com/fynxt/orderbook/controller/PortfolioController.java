@@ -7,8 +7,7 @@ import com.fynxt.orderbook.service.OverlapService;
 import com.fynxt.orderbook.service.PortfolioService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,9 +20,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/portfolio")
 @Validated
+@Slf4j
 public class PortfolioController {
-
-    private static final Logger log = LoggerFactory.getLogger(PortfolioController.class);
 
     private final PortfolioService portfolioService;
     private final OverlapService overlapService;
