@@ -1,6 +1,6 @@
 package com.fynxt.orderbook.dto;
 
-import com.fynxt.orderbook.domain.logic.Basket;
+import com.fynxt.orderbook.domain.model.enums.Basket;
 import com.fynxt.orderbook.domain.logic.RiskClassifier.Risk;
 import java.util.List;
 

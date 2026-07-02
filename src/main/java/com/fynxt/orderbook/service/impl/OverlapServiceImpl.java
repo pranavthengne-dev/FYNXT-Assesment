@@ -1,10 +1,9 @@
 package com.fynxt.orderbook.service.impl;
 
-import com.fynxt.orderbook.config.OrderBookProperties;
-import com.fynxt.orderbook.domain.logic.Basket;
 import com.fynxt.orderbook.domain.logic.OverlapCalculator;
 import com.fynxt.orderbook.domain.logic.RiskClassifier;
 import com.fynxt.orderbook.domain.model.Holding;
+import com.fynxt.orderbook.domain.model.enums.Basket;
 import com.fynxt.orderbook.dto.OverlapResponse;
 import com.fynxt.orderbook.service.OverlapService;
 import com.fynxt.orderbook.service.PortfolioService;
@@ -22,17 +21,14 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class OverlapServiceImpl implements OverlapService {
 
-    private final OrderBookProperties properties;
     private final PortfolioService portfolioService;
     private final OverlapCalculator overlapCalculator = new OverlapCalculator();
     private final RiskClassifier riskClassifier;
 
     public OverlapServiceImpl(
-            OrderBookProperties properties,
             PortfolioService portfolioService,
             RiskClassifier riskClassifier
     ) {
-        this.properties = properties;
         this.portfolioService = portfolioService;
         this.riskClassifier = riskClassifier;
     }
@@ -48,7 +44,7 @@ public class OverlapServiceImpl implements OverlapService {
         Map<Basket, Double> overlaps = new EnumMap<>(Basket.class);
         log.debug("Using class=OverlapServiceImpl method=calculateOverlap dependency=OverlapCalculator.calculate");
         Arrays.stream(Basket.values())
-                .forEach(basket -> overlaps.put(basket, overlapCalculator.calculate(portfolioStocks, properties.stocksFor(basket))));
+                .forEach(basket -> overlaps.put(basket, overlapCalculator.calculate(portfolioStocks, basket.stocks())));
 
         Basket dominantBasket = overlaps.entrySet().stream()
                 .max(Comparator.comparingDouble(Map.Entry::getValue))
